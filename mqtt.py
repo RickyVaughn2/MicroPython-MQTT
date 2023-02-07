@@ -60,8 +60,17 @@ def publish(s, topic, payload, qos=0, retain=False):
 
     s.write(packet)
 
-# Connect to the broker
-s = connect("client_id", None, None, "broker.example.com", 1883, 60)
+def on_message(topic, payload):
+    # Callback function that is called when a message is received
+    print("Received message: topic={}, payload={}".format(topic, payload))
 
-# Publish a message to the topic "test"
-publish(s, "test", "Hello, MQTT!", qos=0, retain=False)
+def receive(s):
+    # Receive incoming messages and call on_message callback
+    while True:
+        header = s.read(1)
+        if len(header) == 0:
+            return
+        cmd = header[0] >> 4
+        if cmd == 3:
+            length, = ustruct.unpack("!H", s.read(2))
+            topic_len, = ustruct.unpack("!H", s.read
